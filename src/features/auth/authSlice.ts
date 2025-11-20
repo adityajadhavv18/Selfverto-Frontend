@@ -1,41 +1,52 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { authApi } from "../../api/authApi";
+// src/features/auth/authSlice.ts
 import {
-  type AuthState,
-  type LoginRequest,
-  type SignupRequest,
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
+import { authApi } from "../../api/authApi";
+import type {
+  AuthState,
+  LoginRequest,
+  SignupRequest,
+  AuthResponse,
 } from "./authTypes";
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem("token"),
+  token:
+    typeof window !== "undefined"
+      ? localStorage.getItem("token") || null
+      : null,
   loading: false,
   error: null,
 };
 
-export const loginThunk = createAsyncThunk(
-  "auth/login",
-  async (payload: LoginRequest, { rejectWithValue }) => {
-    try {
-      const res = await authApi.login(payload);
-      return res.data;
-    } catch (err: any) {
-      return rejectWithValue(err.response.data.message);
-    }
+export const loginThunk = createAsyncThunk<
+  AuthResponse,
+  LoginRequest,
+  { rejectValue: string }
+>("auth/login", async (payload, { rejectWithValue }) => {
+  try {
+    const res = await authApi.login(payload);
+    return res.data;
+  } catch (err: any) {
+    return rejectWithValue(err?.response?.data?.message || "Login failed");
   }
-);
+});
 
-export const signupThunk = createAsyncThunk(
-  "auth/signup",
-  async (payload: SignupRequest, { rejectWithValue }) => {
-    try {
-      const res = await authApi.signup(payload);
-      return res.data;
-    } catch (err: any) {
-      return rejectWithValue(err.response.data.message);
-    }
+export const signupThunk = createAsyncThunk<
+  AuthResponse,
+  SignupRequest,
+  { rejectValue: string }
+>("auth/signup", async (payload, { rejectWithValue }) => {
+  try {
+    const res = await authApi.signup(payload);
+    return res.data;
+  } catch (err: any) {
+    return rejectWithValue(err?.response?.data?.message || "Signup failed");
   }
-);
+});
 
 const authSlice = createSlice({
   name: "auth",
@@ -44,26 +55,55 @@ const authSlice = createSlice({
     logout: (state) => {
       state.token = null;
       state.user = null;
-      localStorage.removeItem("token");
+      state.error = null;
+      if (typeof window !== "undefined") localStorage.removeItem("token");
+    },
+    clearError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(loginThunk.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(loginThunk.fulfilled, (state, action) => {
+    // LOGIN
+    builder.addCase(loginThunk.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(
+      loginThunk.fulfilled,
+      (state, action: PayloadAction<AuthResponse>) => {
         state.loading = false;
         state.user = action.payload.data;
         state.token = action.payload.token;
-        localStorage.setItem("token", state.token!);
-      })
-      .addCase(loginThunk.rejected, (state, action) => {
+        if (typeof window !== "undefined")
+          localStorage.setItem("token", action.payload.token);
+      }
+    );
+    builder.addCase(loginThunk.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? "Login failed";
+    });
+
+    // SIGNUP
+    builder.addCase(signupThunk.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(
+      signupThunk.fulfilled,
+      (state, action: PayloadAction<AuthResponse>) => {
         state.loading = false;
-        state.error = action.payload as string;
-      });
+        state.user = action.payload.data;
+        state.token = action.payload.token;
+        if (typeof window !== "undefined")
+          localStorage.setItem("token", action.payload.token);
+      }
+    );
+    builder.addCase(signupThunk.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? "Signup failed";
+    });
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;
