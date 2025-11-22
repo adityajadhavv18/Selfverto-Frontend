@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import Feed from "../pages/Feed";
+import Profile from "@/pages/Profile";
+
 import ProtectedRoute from "./protectedRoutes";
 
 const AppRoutes = () => {
@@ -15,6 +17,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Feed />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />

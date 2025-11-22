@@ -13,6 +13,7 @@ export const useAuth = () => {
     token,
     loading,
     error,
+
     login: (data: any) => dispatch(loginThunk(data)),
     signup: (data: any) => dispatch(signupThunk(data)),
     logout: () => dispatch(logout()),
