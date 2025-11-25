@@ -1,9 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Props {
+  id: string;
   content: string;
   imageUrl?: string;
-  author?: { name: string };
+  author?: { name: string; id?: string };
+  onDelete?: (id: string) => void;
+  isMine?: boolean;
 }
 
 const PostCard = ({ content, imageUrl, author }: Props) => {

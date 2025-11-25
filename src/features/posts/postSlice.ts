@@ -14,11 +14,25 @@ export const fetchFeedThunk = createAsyncThunk(
   }
 );
 
+export const deletePostThunk = createAsyncThunk(
+  "posts/delete",
+  async (postId: string, { rejectWithValue }) => {
+    try {
+      const res = await postApi.delete(postId);
+      console.log("Created post:", res.data);
+      return postId;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message);
+    }
+  }
+);
+
 const initialState: PostsState = {
   feed: [],
   loading: false,
   page: 1,
   hasMore: true,
+  myPosts: [],
 };
 
 const postSlice = createSlice({
@@ -51,6 +65,12 @@ const postSlice = createSlice({
       })
       .addCase(fetchFeedThunk.rejected, (state) => {
         state.loading = false;
+      })
+      .addCase(deletePostThunk.fulfilled, (state, action) => {
+        const id = action.payload;
+
+        state.feed = state.feed.filter((p) => p.id !== id);
+        state.myPosts = state.myPosts.filter((p) => p.id !== id);
       });
   },
 });

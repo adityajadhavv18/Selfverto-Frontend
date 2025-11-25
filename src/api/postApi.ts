@@ -10,4 +10,5 @@ export const postApi = {
     axiosClient.post("/posts", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
+  delete: (id: string) => axiosClient.delete(`/posts/${id}`),
 };

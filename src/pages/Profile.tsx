@@ -2,12 +2,17 @@ import { useEffect, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { useProfile } from "@/features/profile/useProfile";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { deletePostThunk } from "@/features/posts/postSlice";
+import type { AppDispatch } from "@/app/store";
 
 const Profile = () => {
   const { profile, myPosts, fetchProfile, fetchMyPosts, uploadProfilePicture } =
     useProfile();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     fetchProfile();
@@ -71,12 +76,22 @@ const Profile = () => {
           <p className="text-gray-500">No posts yet.</p>
         ) : (
           <div className="grid grid-cols-3 gap-4">
-            {myPosts.map((post: (typeof myPosts)[0]) => (
-              <img
-                key={post.id}
-                src={post.imageUrl || "https://via.placeholder.com/200"}
-                className="w-full h-40 object-cover rounded-md border"
-              />
+            {myPosts.map((post) => (
+              <div key={post.id} className="relative group">
+                {/* Post Image */}
+                <img
+                  src={post.imageUrl}
+                  className="w-full h-40 object-cover rounded-md border"
+                />
+
+                {/* Delete Button (visible only on hover) */}
+                <button
+                  onClick={() => dispatch(deletePostThunk(post.id))}
+                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             ))}
           </div>
         )}

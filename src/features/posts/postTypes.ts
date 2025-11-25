@@ -6,6 +6,7 @@ export interface PostResponse {
   isPublic: boolean;
   createdAt: string;
   author?: {
+    id: string; // ADD THIS
     name: string;
     email: string;
   };
@@ -14,6 +15,7 @@ export interface PostResponse {
 export interface PostsState {
   feed: PostResponse[];
   loading: boolean;
+  myPosts: PostResponse[];
   page: number;
   hasMore: boolean;
 }
